@@ -7,13 +7,22 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///subscriptions.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 
 db = SQLAlchemy(app)
 
-# Database Model
+# Database Models
+class UnsubSite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.String(100), unique=True, nullable=False)
+    header_text = db.Column(db.Text, nullable=False)
+    footer_text = db.Column(db.Text, nullable=False)
+    yes_text = db.Column(db.String(100), nullable=False, default="YES")
+    no_text = db.Column(db.String(100), nullable=False, default="NO")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Subscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), nullable=False)
@@ -37,6 +46,11 @@ def subscribe_with_params():
     if not email:
         return render_template('error.html', message="Email address is required.")
     
+    # Look up campaign configuration
+    campaign_config = None
+    if campaign_id:
+        campaign_config = UnsubSite.query.filter_by(campaign_id=campaign_id).first()
+    
     # Check if subscription already exists for this email and campaign
     existing_subscription = Subscription.query.filter_by(
         email=email, 
@@ -44,8 +58,11 @@ def subscribe_with_params():
     ).first()
     
     if existing_subscription:
-        # Redirect to existing subscription management
-        return redirect(url_for('manage_subscription', token=existing_subscription.token))
+        # Show management page with campaign-specific text
+        return render_template('simple_manage.html', 
+                             subscription=existing_subscription,
+                             campaign_config=campaign_config,
+                             token=existing_subscription.token)
     
     # Create new subscription
     token = secrets.token_urlsafe(32)
@@ -59,8 +76,11 @@ def subscribe_with_params():
     db.session.add(subscription)
     db.session.commit()
     
-    # Redirect to management page
-    return redirect(url_for('manage_subscription', token=token))
+    # Show management page with campaign-specific text
+    return render_template('simple_manage.html', 
+                         subscription=subscription,
+                         campaign_config=campaign_config,
+                         token=token)
 
 @app.route('/manage/<token>')
 def manage_subscription(token):
@@ -79,15 +99,30 @@ def update_subscription(token):
         return render_template('error.html', message="Invalid subscription link.")
     
     action = request.form.get('action')
+    choice = request.form.get('choice')  # For radio button form
     
-    if action == 'unsubscribe':
-        subscription.is_subscribed = False
-        message = "You have been successfully unsubscribed."
-    elif action == 'resubscribe':
-        subscription.is_subscribed = True
-        message = "You have been successfully resubscribed."
+    # Handle radio button choice
+    if choice:
+        if choice == 'no':
+            subscription.is_subscribed = False
+            message = "You have been successfully unsubscribed."
+        elif choice == 'yes':
+            subscription.is_subscribed = True
+            message = "You have been successfully resubscribed."
+        else:
+            return render_template('error.html', message="Invalid choice.")
+    # Handle original button form
+    elif action:
+        if action == 'unsubscribe':
+            subscription.is_subscribed = False
+            message = "You have been successfully unsubscribed."
+        elif action == 'resubscribe':
+            subscription.is_subscribed = True
+            message = "You have been successfully resubscribed."
+        else:
+            return render_template('error.html', message="Invalid action.")
     else:
-        return render_template('error.html', message="Invalid action.")
+        return render_template('error.html', message="No action specified.")
     
     subscription.updated_at = datetime.utcnow()
     db.session.commit()
@@ -97,6 +132,18 @@ def update_subscription(token):
 # Initialize database on startup
 with app.app_context():
     db.create_all()
+    
+    # Create default campaign if none exists
+    if not UnsubSite.query.first():
+        default_campaign = UnsubSite(
+            campaign_id='default',
+            header_text='Manage Your Email Subscription',
+            footer_text='You can change your preference at any time.',
+            yes_text='YES - Keep me subscribed',
+            no_text='NO - Unsubscribe me'
+        )
+        db.session.add(default_campaign)
+        db.session.commit()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
