@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
+import secrets
 from datetime import datetime
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ db = SQLAlchemy(app)
 class Subscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), nullable=False)
+    campaign_id = db.Column(db.String(100), nullable=True)
     token = db.Column(db.String(255), unique=True, nullable=False)
     is_subscribed = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -25,6 +27,40 @@ class Subscription(db.Model):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/subscribe')
+def subscribe_with_params():
+    """Handle subscription with email and campaign_id from URL parameters"""
+    email = request.args.get('email')
+    campaign_id = request.args.get('id')  # Using 'id' as the parameter name for campaign
+    
+    if not email:
+        return render_template('error.html', message="Email address is required.")
+    
+    # Check if subscription already exists for this email and campaign
+    existing_subscription = Subscription.query.filter_by(
+        email=email, 
+        campaign_id=campaign_id
+    ).first()
+    
+    if existing_subscription:
+        # Redirect to existing subscription management
+        return redirect(url_for('manage_subscription', token=existing_subscription.token))
+    
+    # Create new subscription
+    token = secrets.token_urlsafe(32)
+    subscription = Subscription(
+        email=email,
+        campaign_id=campaign_id,
+        token=token,
+        is_subscribed=True
+    )
+    
+    db.session.add(subscription)
+    db.session.commit()
+    
+    # Redirect to management page
+    return redirect(url_for('manage_subscription', token=token))
 
 @app.route('/manage/<token>')
 def manage_subscription(token):

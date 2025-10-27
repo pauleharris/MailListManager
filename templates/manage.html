@@ -79,6 +79,9 @@
         <h1>Manage Your Email Subscription</h1>
         
         <p class="email">Email: {{ subscription.email }}</p>
+        {% if subscription.campaign_id %}
+        <p class="email">Campaign: {{ subscription.campaign_id }}</p>
+        {% endif %}
         
         <div class="status {% if subscription.is_subscribed %}subscribed{% else %}unsubscribed{% endif %}">
             {% if subscription.is_subscribed %}
