@@ -7,7 +7,24 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+database_url = os.environ.get('DATABASE_URL')
+
+# If DATABASE_URL is not set, build it from individual components
+if not database_url:
+    db_host = os.environ.get('DB_HOST')
+    db_user = os.environ.get('DB_USER')
+    db_password = os.environ.get('DB_PASSWORD')
+    db_name_mailmaster = os.environ.get('DB_NAME_MAILMASTER')
+    db_name_plg = os.environ.get('DB_NAME_PLG')
+    db_port = os.environ.get('DB_PORT', '5432')  # Default PostgreSQL port
+    
+    # Use DB_NAME_MAILMASTER as the primary database
+    if db_host and db_user and db_password and db_name_mailmaster:
+        database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name_mailmaster}?sslmode=require"
+    else:
+        raise RuntimeError("Database configuration missing. Either set DATABASE_URL or provide DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME_MAILMASTER environment variables.")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 
