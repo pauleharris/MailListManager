@@ -15,10 +15,11 @@ if not database_url:
     db_user = os.environ.get('DB_USER')
     db_password = os.environ.get('DB_PASSWORD')
     db_name_mailmaster = os.environ.get('DB_NAME_MAILMASTER')
-    db_port = os.environ.get('DB_PORT', '5432')  # Default PostgreSQL port
+    db_port = os.environ.get('DB_PORT', '3306')  # Default MySQL port
     # Use DB_NAME_MAILMASTER as the primary database
     if db_host and db_user and db_password and db_name_mailmaster:
-        database_url = f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name_mailmaster}?sslmode=require"
+        # mysql+mysqlconnector://<user>:<password>@<host>:<port>/<dbname>
+        database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_name_mailmaster}"
     else:
         raise RuntimeError("Database configuration missing. Either set DATABASE_URL or provide DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME_MAILMASTER environment variables.")
 
