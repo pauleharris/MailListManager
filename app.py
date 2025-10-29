@@ -25,6 +25,11 @@ if not database_url:
         except Exception:
             db_port_int = 3306
         database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port_int}/{db_name_mailmaster}"
+        # Print the connection string with password obscured
+        obscured = database_url.replace(f":{db_password}@", ":***@") if db_password else database_url
+        print("\n\n==================== DB CONNECTION STRING ====================")
+        print(f"Attempting DB connection with: {obscured}")
+        print("============================================================\n\n")
     else:
         raise RuntimeError("Database configuration missing. Either set DATABASE_URL or provide DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME_MAILMASTER environment variables.")
 
