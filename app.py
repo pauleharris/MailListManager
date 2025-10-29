@@ -19,7 +19,12 @@ if not database_url:
     # Use DB_NAME_MAILMASTER as the primary database
     if db_host and db_user and db_password and db_name_mailmaster:
         # mysql+mysqlconnector://<user>:<password>@<host>:<port>/<dbname>
-        database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_name_mailmaster}"
+        # Port must be int for mysql-connector
+        try:
+            db_port_int = int(db_port)
+        except Exception:
+            db_port_int = 3306
+        database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port_int}/{db_name_mailmaster}"
     else:
         raise RuntimeError("Database configuration missing. Either set DATABASE_URL or provide DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME_MAILMASTER environment variables.")
 
