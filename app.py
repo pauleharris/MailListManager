@@ -6,7 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Database configuration
+# Database configuration 
 database_url = os.environ.get('DATABASE_URL')
 
 # If DATABASE_URL is not set, build it from individual components
