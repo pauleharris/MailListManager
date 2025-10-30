@@ -29,10 +29,6 @@ if not database_url:
         missing_vars.append('DB_NAME_PLG')
 
     if not missing_vars:
-        # Azure MySQL: username must be user@servername
-        # If db_user does not contain '@', append the host as servername
-        if db_user and '@' not in db_user and db_host:
-            db_user = f"{db_user}@{db_host}"
         # Port must be int for mysql-connector
         try:
             db_port_int = int(db_port)
@@ -42,7 +38,11 @@ if not database_url:
         # Print the connection string with password obscured
         obscured = database_url.replace(f":{db_password}@", ":***@") if db_password else database_url
         print("\n\n==================== DB CONNECTION STRING ====================")
-        print(f"Attempting DB connection with: {obscured}")
+        print(f"DB_USER: {db_user}")
+        print(f"DB_HOST: {db_host}")
+        print(f"DB_PORT: {db_port_int}")
+        print(f"DB_NAME: {db_name_mailmaster}")
+        print(f"Connection string: {obscured}")
         print("============================================================\n\n")
     else:
         raise RuntimeError(
