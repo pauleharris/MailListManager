@@ -14,9 +14,9 @@ if not database_url:
     db_host = os.environ.get('DB_HOST')
     db_user = os.environ.get('DB_USER')
     db_password = os.environ.get('DB_PASSWORD')
-    db_name_mailmaster = os.environ.get('DB_NAME_MAILMASTER')
+    db_name_mailmaster = os.environ.get('DB_NAME_PLG')
     db_port = os.environ.get('DB_PORT', '3306')  # Default MySQL port
-    # Use DB_NAME_MAILMASTER as the primary database
+    # Use DB_NAME_PLG as the primary database
     missing_vars = []
     if not db_host:
         missing_vars.append('DB_HOST')
@@ -25,7 +25,7 @@ if not database_url:
     if not db_password:
         missing_vars.append('DB_PASSWORD')
     if not db_name_mailmaster:
-        missing_vars.append('DB_NAME_MAILMASTER')
+        missing_vars.append('DB_NAME_PLG')
 
     if not missing_vars:
         # Azure MySQL: username must be user@servername, host must be servername.mysql.database.azure.com
@@ -49,7 +49,7 @@ if not database_url:
     else:
         raise RuntimeError(
             f"Database configuration missing. Please set the following environment variables: {', '.join(missing_vars)}.\n"
-            "Either set DATABASE_URL or provide DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME_MAILMASTER environment variables."
+            "Either set DATABASE_URL or provide DB_HOST, DB_USER, DB_PASSWORD, and DB_NAME_PLG environment variables."
         )
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
