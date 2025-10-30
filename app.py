@@ -15,6 +15,7 @@ if not database_url:
     db_user = os.environ.get('DB_USER')
     db_password = os.environ.get('DB_PASSWORD')
     db_name_mailmaster = os.environ.get('DB_NAME_PLG')
+    db_server_name = os.environ.get('DB_SERVER_NAME')  # Azure MySQL server name
     db_port = os.environ.get('DB_PORT', '3306')  # Default MySQL port
     # Use DB_NAME_PLG as the primary database
     missing_vars = []
@@ -28,13 +29,10 @@ if not database_url:
         missing_vars.append('DB_NAME_PLG')
 
     if not missing_vars:
-        # Azure MySQL: username must be user@servername, host must be servername.mysql.database.azure.com
-        # If db_user does not contain '@', try to extract servername from db_host
-        if '@' not in db_user:
-            # Try to extract servername from db_host
-            if db_host and '.mysql.database.azure.com' in db_host:
-                servername = db_host.split('.mysql.database.azure.com')[0]
-                db_user = f"{db_user}@{servername}"
+        # Azure MySQL: username must be user@servername
+        # If db_user does not contain '@', append the host as servername
+        if db_user and '@' not in db_user and db_host:
+            db_user = f"{db_user}@{db_host}"
         # Port must be int for mysql-connector
         try:
             db_port_int = int(db_port)
