@@ -104,9 +104,9 @@ def subscribe_with_params():
     if campaign_id:
         campaign_config = UnsubSite.query.filter_by(campaign_id=campaign_id).first()
     
-    # If no campaign config found, use the default
+    # If no campaign config found, use the default (campaign_id = '-1')
     if not campaign_config:
-        campaign_config = UnsubSite.query.filter_by(campaign_id='default').first()
+        campaign_config = UnsubSite.query.filter_by(campaign_id='-1').first()
     
     # Check if subscription already exists for this email and campaign
     existing_subscription = Subscription.query.filter_by(
@@ -190,10 +190,10 @@ def update_subscription(token):
 with app.app_context():
     db.create_all()
     
-    # Create default campaign if none exists
-    if not UnsubSite.query.first():
+    # Create default campaign if none exists (campaign_id = '-1')
+    if not UnsubSite.query.filter_by(campaign_id='-1').first():
         default_campaign = UnsubSite(
-            campaign_id='default',
+            campaign_id='-1',
             header_text='Manage Your Email Subscription',
             footer_text='You can change your preference at any time.',
             yes_text='YES - Keep me subscribed',
