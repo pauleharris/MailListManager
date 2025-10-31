@@ -104,9 +104,9 @@ def subscribe_with_params():
     if campaign_id:
         campaign_config = UnsubSite.query.filter_by(CampaignID=campaign_id).first()
     
-    # If no campaign config found, use the default (CampaignID = -1)
+    # If no campaign config found, use the default (CampaignID = '-1')
     if not campaign_config:
-        campaign_config = UnsubSite.query.filter_by(CampaignID=-1).first()
+        campaign_config = UnsubSite.query.filter_by(CampaignID='-1').first()
     
     # Check if subscription already exists for this email and campaign
     existing_subscription = Subscription.query.filter_by(
