@@ -68,13 +68,13 @@ db = SQLAlchemy(app)
 
 # Database Models
 class UnsubSite(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    campaign_id = db.Column(db.String(100), unique=True, nullable=False)
-    header_text = db.Column(db.Text, nullable=False)
-    footer_text = db.Column(db.Text, nullable=False)
-    yes_text = db.Column(db.String(100), nullable=False, default="YES")
-    no_text = db.Column(db.String(100), nullable=False, default="NO")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __tablename__ = 'UnsubSite'
+    
+    CampaignID = db.Column(db.String(36), primary_key=True)
+    YesText = db.Column(db.String(256))
+    NoText = db.Column(db.String(256))
+    Header = db.Column(db.String(256))
+    Footer = db.Column(db.String(256))
 
 class Subscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -102,11 +102,11 @@ def subscribe_with_params():
     # Look up campaign configuration
     campaign_config = None
     if campaign_id:
-        campaign_config = UnsubSite.query.filter_by(campaign_id=campaign_id).first()
+        campaign_config = UnsubSite.query.filter_by(CampaignID=campaign_id).first()
     
-    # If no campaign config found, use the default (campaign_id = '-1')
+    # If no campaign config found, use the default (CampaignID = -1)
     if not campaign_config:
-        campaign_config = UnsubSite.query.filter_by(campaign_id='-1').first()
+        campaign_config = UnsubSite.query.filter_by(CampaignID=-1).first()
     
     # Check if subscription already exists for this email and campaign
     existing_subscription = Subscription.query.filter_by(
@@ -190,17 +190,8 @@ def update_subscription(token):
 with app.app_context():
     db.create_all()
     
-    # Create default campaign if none exists (campaign_id = '-1')
-    if not UnsubSite.query.filter_by(campaign_id='-1').first():
-        default_campaign = UnsubSite(
-            campaign_id='-1',
-            header_text='Manage Your Email Subscription',
-            footer_text='You can change your preference at any time.',
-            yes_text='YES - Keep me subscribed',
-            no_text='NO - Unsubscribe me'
-        )
-        db.session.add(default_campaign)
-        db.session.commit()
+    # Note: Default campaign (CampaignID = -1) should already exist in your database
+    # If not, you need to insert it manually or via your database management tool
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

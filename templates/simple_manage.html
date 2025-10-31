@@ -62,8 +62,8 @@
     <div class="container">
         <!-- Header Text -->
         <div class="header">
-            {% if campaign_config and campaign_config.header_text %}
-                {{ campaign_config.header_text }}
+            {% if campaign_config and campaign_config.Header %}
+                {{ campaign_config.Header }}
             {% else %}
                 Manage Your Email Subscription
             {% endif %}
@@ -74,8 +74,8 @@
             <div class="choice-section">
                 <label class="radio-option">
                     <input type="radio" name="choice" value="yes" {% if subscription.is_subscribed %}checked{% endif %} />
-                    {% if campaign_config and campaign_config.yes_text %}
-                        {{ campaign_config.yes_text }}
+                    {% if campaign_config and campaign_config.YesText %}
+                        {{ campaign_config.YesText }}
                     {% else %}
                         YES - Keep me subscribed
                     {% endif %}
@@ -83,8 +83,8 @@
                 
                 <label class="radio-option">
                     <input type="radio" name="choice" value="no" {% if not subscription.is_subscribed %}checked{% endif %} />
-                    {% if campaign_config and campaign_config.no_text %}
-                        {{ campaign_config.no_text }}
+                    {% if campaign_config and campaign_config.NoText %}
+                        {{ campaign_config.NoText }}
                     {% else %}
                         NO - Unsubscribe me
                     {% endif %}
@@ -96,8 +96,8 @@
         
         <!-- Footer Text -->
         <div class="footer">
-            {% if campaign_config and campaign_config.footer_text %}
-                {{ campaign_config.footer_text }}
+            {% if campaign_config and campaign_config.Footer %}
+                {{ campaign_config.Footer }}
             {% else %}
                 You can change your preference at any time.
             {% endif %}
