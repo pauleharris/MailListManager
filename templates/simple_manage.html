@@ -73,7 +73,7 @@
         <form method="POST" action="{{ url_for('update_subscription', token=token) }}">
             <div class="choice-section">
                 <label class="radio-option">
-                    <input type="radio" name="choice" value="yes" />
+                    <input type="radio" name="choice" value="yes" {% if subscription.is_subscribed %}checked{% endif %} />
                     {% if campaign_config and campaign_config.yes_text %}
                         {{ campaign_config.yes_text }}
                     {% else %}
@@ -82,7 +82,7 @@
                 </label>
                 
                 <label class="radio-option">
-                    <input type="radio" name="choice" value="no" checked />
+                    <input type="radio" name="choice" value="no" {% if not subscription.is_subscribed %}checked{% endif %} />
                     {% if campaign_config and campaign_config.no_text %}
                         {{ campaign_config.no_text }}
                     {% else %}
