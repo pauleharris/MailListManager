@@ -35,8 +35,8 @@ if not database_url:
         except Exception:
             db_port_int = 3306
         
-        # Build connection string - username is just root, not root@host
-        database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port_int}/{db_name_mailmaster}"
+        # Build connection string with connect_args to ensure port is int
+        database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_name_mailmaster}"
         
         # Print the connection string with password obscured
         obscured = database_url.replace(f":{db_password}@", ":***@") if db_password else database_url
@@ -54,6 +54,11 @@ if not database_url:
         )
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'connect_args': {
+        'port': int(os.environ.get('DB_PORT', '3306'))
+    }
+}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 
