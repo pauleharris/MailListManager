@@ -35,17 +35,15 @@ if not database_url:
         except Exception:
             db_port_int = 3306
         
-        # Build connection string with connect_args to ensure port is int
-        database_url = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_name_mailmaster}"
+        # Build simple connection string - just the driver type
+        # Pass all connection details via connect_args to ensure correct types
+        database_url = f"mysql+mysqlconnector:///"
         
-        # Print the connection string with password obscured
-        obscured = database_url.replace(f":{db_password}@", ":***@") if db_password else database_url
-        print("\n\n==================== DB CONNECTION STRING ====================")
+        print("\n\n==================== DB CONNECTION CONFIG ====================")
         print(f"DB_USER: {db_user}")
         print(f"DB_HOST: {db_host}")
         print(f"DB_PORT: {db_port_int}")
         print(f"DB_NAME: {db_name_mailmaster}")
-        print(f"Connection string: {obscured}")
         print("============================================================\n\n")
     else:
         raise RuntimeError(
@@ -56,7 +54,11 @@ if not database_url:
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {
-        'port': int(os.environ.get('DB_PORT', '3306'))
+        'host': os.environ.get('DB_HOST'),
+        'port': int(os.environ.get('DB_PORT', '3306')),
+        'user': os.environ.get('DB_USER'),
+        'password': os.environ.get('DB_PASSWORD'),
+        'database': os.environ.get('DB_NAME_PLG')
     }
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
